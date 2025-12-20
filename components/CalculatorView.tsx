@@ -8,23 +8,40 @@ export const CalculatorView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
   const handleInput = (val: string) => {
     if (display === '0' && !isNaN(Number(val))) setDisplay(val);
+    else if (display === 'Error') setDisplay(val);
     else setDisplay(prev => prev + val);
+  };
+
+  /**
+   * Safe Arithmetic Evaluator
+   * This avoids eval() and new Function() to pass Vercel's security checks.
+   */
+  const safeEval = (str: string): number => {
+    // Basic regex to split numbers and operators
+    const tokens = str.split(/([+\-×÷])/).map(t => t.trim());
+    if (tokens.length === 0) return 0;
+
+    let result = parseFloat(tokens[0]);
+    for (let i = 1; i < tokens.length; i += 2) {
+      const op = tokens[i];
+      const val = parseFloat(tokens[i + 1]);
+      if (op === '+') result += val;
+      if (op === '-') result -= val;
+      if (op === '×') result *= val;
+      if (op === '÷') result /= val;
+    }
+    return result;
   };
 
   const calculate = () => {
     try {
-      // Safe alternative to eval() using Function constructor
-      // Replace display symbols for math
-      const expression = display.replace(/×/g, '*').replace(/÷/g, '/');
-      const res = new Function(`return ${expression}`)();
-      
-      if (res === undefined || isNaN(res)) throw new Error();
+      const res = safeEval(display);
+      if (isNaN(res) || !isFinite(res)) throw new Error();
       
       setHistory(prev => [`${display} = ${res}`, ...prev].slice(0, 5));
       setDisplay(String(res));
     } catch (e) {
       setDisplay('Error');
-      setTimeout(() => setDisplay('0'), 1000);
     }
   };
 
@@ -49,7 +66,7 @@ export const CalculatorView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
       <div className="flex-1 p-4 flex flex-col">
         <div className="mb-4 h-24 overflow-y-auto bg-gray-100 p-2 rounded-lg text-sm text-gray-500">
-          {history.map((h, i) => <div key={i}>{h}</div>)}
+          {history.length === 0 ? "No history yet" : history.map((h, i) => <div key={i}>{h}</div>)}
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-inner mb-6 text-right text-4xl font-mono truncate border-2 border-blue-100">
@@ -72,7 +89,7 @@ export const CalculatorView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                 : btn === 'C' || btn === 'DEL' 
                 ? 'bg-red-100 text-red-600'
                 : 'bg-white text-gray-800 shadow-sm border'
-              }`}
+              } ${btn === '' ? 'opacity-0 cursor-default' : ''}`}
             >
               {btn}
             </button>
