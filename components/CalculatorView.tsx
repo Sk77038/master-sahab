@@ -1,22 +1,25 @@
 
 import React, { useState } from 'react';
-import { Calculator as CalcIcon, History, Delete, ArrowLeft } from 'lucide-react';
+import { Calculator as CalcIcon, ArrowLeft } from 'lucide-react';
 
 export const CalculatorView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [display, setDisplay] = useState('0');
   const [history, setHistory] = useState<string[]>([]);
 
   const handleInput = (val: string) => {
-    if (display === '0') setDisplay(val);
+    if (display === '0' && !isNaN(Number(val))) setDisplay(val);
     else setDisplay(prev => prev + val);
   };
 
   const calculate = () => {
     try {
-      // Basic math evaluation - safe for small app, use mathjs for complex scientific ones
-      // Replace symbols for eval
-      const sanitized = display.replace(/×/g, '*').replace(/÷/g, '/');
-      const res = eval(sanitized);
+      // Safe alternative to eval() using Function constructor
+      // Replace display symbols for math
+      const expression = display.replace(/×/g, '*').replace(/÷/g, '/');
+      const res = new Function(`return ${expression}`)();
+      
+      if (res === undefined || isNaN(res)) throw new Error();
+      
       setHistory(prev => [`${display} = ${res}`, ...prev].slice(0, 5));
       setDisplay(String(res));
     } catch (e) {
@@ -45,17 +48,14 @@ export const CalculatorView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
       </header>
 
       <div className="flex-1 p-4 flex flex-col">
-        {/* History */}
         <div className="mb-4 h-24 overflow-y-auto bg-gray-100 p-2 rounded-lg text-sm text-gray-500">
           {history.map((h, i) => <div key={i}>{h}</div>)}
         </div>
 
-        {/* Display */}
         <div className="bg-white p-6 rounded-2xl shadow-inner mb-6 text-right text-4xl font-mono truncate border-2 border-blue-100">
           {display}
         </div>
 
-        {/* Grid */}
         <div className="grid grid-cols-4 gap-3 flex-1">
           {buttons.map((btn, i) => (
             <button
