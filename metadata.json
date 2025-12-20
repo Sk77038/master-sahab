@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Master Sahab AI",
+  "description": "An all-in-one student study companion with AI solver, quiz system, and educational tools.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
