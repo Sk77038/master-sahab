@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Trophy, 
@@ -22,7 +23,7 @@ interface SidebarProps {
 }
 
 interface MenuItem {
-  id: View | string;
+  id: View;
   label: string;
   icon: React.ReactNode;
   badge?: string;
@@ -31,32 +32,27 @@ interface MenuItem {
 export const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, onClose, onNavigate, onLogout }) => {
   if (!isOpen) return null;
 
+  // Ensuring all IDs are strictly from the View enum to prevent build-time TS errors
   const menuItems: MenuItem[] = [
     { id: View.HOME, label: 'Home Dashboard', icon: <Home className="text-blue-500" size={20} /> },
     { id: View.LEADERBOARD, label: 'Leaderboard', icon: <Trophy className="text-amber-500" size={20} />, badge: 'Global' },
     { id: View.PROFILE, label: 'My Profile', icon: <Brain className="text-indigo-500" size={20} /> },
     { id: View.SETTINGS, label: 'Settings', icon: <Settings className="text-gray-500" size={20} /> },
-    { id: 'help', label: 'Help & Support', icon: <HelpCircle className="text-teal-500" size={20} /> },
+    { id: View.PRIVACY, label: 'Privacy Policy', icon: <HelpCircle className="text-teal-500" size={20} /> },
   ];
 
-  const handleItemClick = (item: MenuItem) => {
-    // Check if the ID is a valid View enum value
-    const viewValues = Object.values(View) as string[];
-    if (viewValues.includes(item.id as string)) {
-      onNavigate(item.id as View);
-    }
+  const handleItemClick = (id: View) => {
+    onNavigate(id);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex animate-slide-in">
-      {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
         onClick={onClose}
       />
       
-      {/* Menu Content */}
       <div className="relative w-72 bg-white h-full shadow-2xl flex flex-col animate-slide-in">
         <div className="p-6 bg-blue-600 text-white relative">
           <button 
@@ -94,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, onClose, onNavig
               {menuItems.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => handleItemClick(item)}
+                  onClick={() => handleItemClick(item.id)}
                   className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 transition-colors group text-left"
                 >
                   <div className="flex items-center gap-3">
