@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { 
   Trophy, 
-  Gift, 
   Settings, 
   HelpCircle, 
   LogOut, 
@@ -23,16 +21,32 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
+interface MenuItem {
+  id: View | string;
+  label: string;
+  icon: React.ReactNode;
+  badge?: string;
+}
+
 export const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, onClose, onNavigate, onLogout }) => {
   if (!isOpen) return null;
 
-  const menuItems = [
-    { id: View.HOME, label: 'Home Dashboard', icon: <Home className="text-blue-500" /> },
-    { id: View.LEADERBOARD, label: 'Leaderboard', icon: <Trophy className="text-amber-500" />, badge: 'Global' },
-    { id: View.PROFILE, label: 'My Profile', icon: <Brain className="text-indigo-500" /> },
-    { id: View.SETTINGS, label: 'Settings', icon: <Settings className="text-gray-500" /> },
-    { id: 'help', label: 'Help & Support', icon: <HelpCircle className="text-teal-500" /> },
+  const menuItems: MenuItem[] = [
+    { id: View.HOME, label: 'Home Dashboard', icon: <Home className="text-blue-500" size={20} /> },
+    { id: View.LEADERBOARD, label: 'Leaderboard', icon: <Trophy className="text-amber-500" size={20} />, badge: 'Global' },
+    { id: View.PROFILE, label: 'My Profile', icon: <Brain className="text-indigo-500" size={20} /> },
+    { id: View.SETTINGS, label: 'Settings', icon: <Settings className="text-gray-500" size={20} /> },
+    { id: 'help', label: 'Help & Support', icon: <HelpCircle className="text-teal-500" size={20} /> },
   ];
+
+  const handleItemClick = (item: MenuItem) => {
+    // Check if the ID is a valid View enum value
+    const viewValues = Object.values(View) as string[];
+    if (viewValues.includes(item.id as string)) {
+      onNavigate(item.id as View);
+    }
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex animate-slide-in">
@@ -80,13 +94,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, onClose, onNavig
               {menuItems.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => {
-                    if (typeof item.id === 'string' && Object.values(View).includes(item.id as View)) {
-                        onNavigate(item.id as View);
-                    }
-                    onClose();
-                  }}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 transition-colors group"
+                  onClick={() => handleItemClick(item)}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 transition-colors group text-left"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gray-50 rounded-xl group-hover:bg-white transition-colors">
