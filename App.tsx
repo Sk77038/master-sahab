@@ -12,30 +12,13 @@ import { solveQuestion, fastExplain } from './components/services/geminiService'
 import { 
   Sparkles, 
   Send, 
-  BookOpen, 
-  Calculator, 
   Languages,
-  TrendingUp,
-  History,
   Zap,
   ArrowRight,
-  AlertTriangle,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  ChevronRight,
-  Award,
   Menu,
   Star,
-  Settings,
-  Trophy,
-  Bell,
-  User,
-  Shield,
-  HelpCircle,
   ChevronLeft,
   Brain,
-  ShieldAlert,
   Camera,
   Loader2
 } from 'lucide-react';
@@ -88,7 +71,7 @@ const App: React.FC = () => {
     setQuickResponse("");
     try {
       const res = await fastExplain(quickPrompt, language);
-      setQuickResponse(res || "Could not find an answer.");
+      setQuickResponse(res);
     } catch (err: any) {
       setQuickResponse(t.apiError);
     } finally {
@@ -104,7 +87,7 @@ const App: React.FC = () => {
     setSolveError(false);
     try {
       const res = await solveQuestion(solvePrompt, language);
-      setSolveResult(res || "No solution found.");
+      setSolveResult(res);
     } catch (err: any) {
       setSolveError(true);
       setSolveResult(t.apiError);
@@ -183,7 +166,7 @@ const App: React.FC = () => {
                   value={quickPrompt}
                   onChange={(e) => setQuickPrompt(e.target.value)}
                   placeholder={t.quickAskPlaceholder}
-                  className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 pr-14 text-sm"
+                  className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 pr-14 text-sm font-medium"
                 />
                 <button 
                   type="submit" 
@@ -203,18 +186,18 @@ const App: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <button onClick={() => setCurrentView(View.QUIZ)} className="bg-blue-600 p-6 rounded-[2.5rem] text-white flex flex-col gap-3 shadow-xl shadow-blue-100 active:scale-95 transition-all">
-                <HelpCircle size={32} />
+                <Brain size={32} />
                 <span className="font-black text-left">{t.startQuiz}</span>
               </button>
               <button onClick={() => setCurrentView(View.SOLVE)} className="bg-white border border-gray-100 p-6 rounded-[2.5rem] text-blue-600 flex flex-col gap-3 shadow-sm active:scale-95 transition-all">
-                <Brain size={32} />
+                <Sparkles size={32} />
                 <span className="font-black text-left text-gray-900">{t.aiSolver}</span>
               </button>
             </div>
 
             <button onClick={() => setCurrentView(View.CAMERA)} className="w-full bg-gradient-to-r from-indigo-500 to-blue-600 p-6 rounded-[2.5rem] text-white flex items-center justify-between shadow-xl shadow-blue-100 overflow-hidden relative active:scale-[0.98] transition-all">
                <div className="flex flex-col text-left">
-                 <span className="text-[10px] font-black uppercase tracking-widest opacity-70">New Feature</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Scanner</span>
                  <span className="text-xl font-black">{t.cameraSolve}</span>
                </div>
                <Camera size={40} className="opacity-40" />
