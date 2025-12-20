@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Question } from "../../types";
 
@@ -8,10 +7,8 @@ import { Question } from "../../types";
 const getAI = () => {
   const apiKey = process.env.API_KEY;
   
-  // Debug check for developers (visible in browser console)
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.error("❌ CRITICAL ERROR: API_KEY is missing from environment!");
-    console.info("Verify that 'API_KEY' is set in Vercel Settings -> Environment Variables and you have REDEPLOYED.");
+    console.error("❌ CRITICAL ERROR: API_KEY is missing!");
     throw new Error("API_KEY_MISSING");
   }
   
@@ -19,7 +16,7 @@ const getAI = () => {
 };
 
 /**
- * Solve complex questions using Gemini 3 Pro
+ * Solve complex questions using Gemini 3 Flash (Multimodal & Fast)
  */
 export async function solveQuestion(prompt: string, language: 'en' | 'hi') {
   try {
@@ -29,8 +26,8 @@ export async function solveQuestion(prompt: string, language: 'en' | 'hi') {
       : "You are 'Master Sahab', an expert academic tutor. Provide clear, professional, step-by-step solutions in English using clean Markdown formatting.";
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
-      contents: `Question: ${prompt}`,
+      model: 'gemini-3-flash-preview',
+      contents: [{ parts: [{ text: `Question: ${prompt}` }] }],
       config: {
         systemInstruction: systemInstruction,
         temperature: 0.7,
@@ -40,7 +37,6 @@ export async function solveQuestion(prompt: string, language: 'en' | 'hi') {
     return response.text;
   } catch (error: any) {
     console.error("Solve Error:", error);
-    if (error.message === "API_KEY_MISSING") throw error;
     throw new Error("Master Sahab's brain is tired. Please try again later.");
   }
 }
@@ -57,7 +53,7 @@ export async function fastExplain(prompt: string, language: 'en' | 'hi') {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Explain briefly: ${prompt}`,
+      contents: [{ parts: [{ text: `Explain briefly: ${prompt}` }] }],
       config: {
         systemInstruction: systemInstruction,
         temperature: 0.5,
@@ -79,7 +75,7 @@ export async function generateAIQuiz(grade: string, subject: string): Promise<Qu
     const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Generate 20 MCQ questions for Class ${grade}, Subject: ${subject}. Questions must be academically accurate for Indian curriculum. Output MUST be an array of objects. Each question must have fields: id, text_en, text_hi, options_en (array of 4), options_hi (array of 4), correctAnswer (0-3), explanation_en, explanation_hi, difficulty, type.`,
+      contents: [{ parts: [{ text: `Generate 20 MCQ questions for Class ${grade}, Subject: ${subject}. Questions must be academically accurate for Indian curriculum. Output MUST be an array of objects.` }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -113,25 +109,26 @@ export async function generateAIQuiz(grade: string, subject: string): Promise<Qu
 }
 
 /**
- * Solve from photo using Gemini Flash Image
+ * Solve from photo using Multimodal Gemini Flash
  */
 export async function solveWithImage(base64Image: string, language: 'en' | 'hi') {
   try {
     const ai = getAI();
     const systemInstruction = language === 'hi'
-      ? "Identify and solve the question in this image. Use Hindi for explanation and English for technical terms."
-      : "Identify and solve the question in this image step-by-step in English.";
+      ? "Identify and solve the question in this image. Use Hindi for explanation and English for technical terms. Provide step-by-step solution."
+      : "Identify and solve the question in this image step-by-step in English. Use clean Markdown formatting.";
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
+      model: 'gemini-3-flash-preview',
+      contents: [{
         parts: [
           { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-          { text: "Identify the academic question and solve it." }
+          { text: "Identify the academic question and solve it completely." }
         ]
-      },
+      }],
       config: {
-        systemInstruction: systemInstruction
+        systemInstruction: systemInstruction,
+        temperature: 0.4
       }
     });
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, Language, UserProfile } from './types';
 import { NAV_ITEMS, TRANSLATIONS, CLASSES, SUBJECTS } from './constants';
@@ -37,7 +36,8 @@ import {
   ChevronLeft,
   Brain,
   ShieldAlert,
-  Camera
+  Camera,
+  Loader2
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -83,12 +83,12 @@ const App: React.FC = () => {
 
   const handleQuickAsk = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickPrompt.trim()) return;
+    if (!quickPrompt.trim() || isQuickLoading) return;
     setIsQuickLoading(true);
     setQuickResponse("");
     try {
       const res = await fastExplain(quickPrompt, language);
-      setQuickResponse(res || "");
+      setQuickResponse(res || "Could not find an answer.");
     } catch (err: any) {
       setQuickResponse(t.apiError);
     } finally {
@@ -98,7 +98,7 @@ const App: React.FC = () => {
 
   const handleSolve = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!solvePrompt.trim()) return;
+    if (!solvePrompt.trim() || isSolverLoading) return;
     setIsSolverLoading(true);
     setSolveResult("");
     setSolveError(false);
@@ -185,12 +185,16 @@ const App: React.FC = () => {
                   placeholder={t.quickAskPlaceholder}
                   className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 pr-14 text-sm"
                 />
-                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center">
-                  <ArrowRight size={20} />
+                <button 
+                  type="submit" 
+                  disabled={isQuickLoading}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center disabled:opacity-50"
+                >
+                  {isQuickLoading ? <Loader2 className="animate-spin" size={18} /> : <ArrowRight size={20} />}
                 </button>
               </form>
               {quickResponse && (
-                <div className="mt-4 p-4 bg-amber-50 rounded-2xl text-sm text-gray-800 border border-amber-100">
+                <div className="mt-4 p-4 bg-amber-50 rounded-2xl text-sm text-gray-800 border border-amber-100 animate-slide-in">
                   <p className="font-black text-amber-700 text-[10px] uppercase mb-1">{t.explanation}:</p>
                   <p className="font-medium">{quickResponse}</p>
                 </div>
@@ -198,17 +202,17 @@ const App: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <button onClick={() => setCurrentView(View.QUIZ)} className="bg-blue-600 p-6 rounded-[2.5rem] text-white flex flex-col gap-3 shadow-xl shadow-blue-100">
+              <button onClick={() => setCurrentView(View.QUIZ)} className="bg-blue-600 p-6 rounded-[2.5rem] text-white flex flex-col gap-3 shadow-xl shadow-blue-100 active:scale-95 transition-all">
                 <HelpCircle size={32} />
                 <span className="font-black text-left">{t.startQuiz}</span>
               </button>
-              <button onClick={() => setCurrentView(View.SOLVE)} className="bg-white border border-gray-100 p-6 rounded-[2.5rem] text-blue-600 flex flex-col gap-3 shadow-sm">
+              <button onClick={() => setCurrentView(View.SOLVE)} className="bg-white border border-gray-100 p-6 rounded-[2.5rem] text-blue-600 flex flex-col gap-3 shadow-sm active:scale-95 transition-all">
                 <Brain size={32} />
                 <span className="font-black text-left text-gray-900">{t.aiSolver}</span>
               </button>
             </div>
 
-            <button onClick={() => setCurrentView(View.CAMERA)} className="w-full bg-gradient-to-r from-indigo-500 to-blue-600 p-6 rounded-[2.5rem] text-white flex items-center justify-between shadow-xl shadow-blue-100 overflow-hidden relative">
+            <button onClick={() => setCurrentView(View.CAMERA)} className="w-full bg-gradient-to-r from-indigo-500 to-blue-600 p-6 rounded-[2.5rem] text-white flex items-center justify-between shadow-xl shadow-blue-100 overflow-hidden relative active:scale-[0.98] transition-all">
                <div className="flex flex-col text-left">
                  <span className="text-[10px] font-black uppercase tracking-widest opacity-70">New Feature</span>
                  <span className="text-xl font-black">{t.cameraSolve}</span>
@@ -230,16 +234,27 @@ const App: React.FC = () => {
               value={solvePrompt}
               onChange={(e) => setSolvePrompt(e.target.value)}
               placeholder={t.solvePrompt}
-              className="w-full h-56 p-6 rounded-[2rem] border-2 border-blue-50 focus:border-blue-500 outline-none resize-none bg-white text-lg font-medium"
+              className="w-full h-56 p-6 rounded-[2rem] border-2 border-blue-50 focus:border-blue-500 outline-none resize-none bg-white text-lg font-medium shadow-sm"
             />
-            <button type="submit" className="absolute bottom-6 right-6 bg-blue-600 text-white p-4 rounded-2xl shadow-xl">
-              <Send size={24} />
+            <button 
+              type="submit" 
+              disabled={isSolverLoading}
+              className="absolute bottom-6 right-6 bg-blue-600 text-white p-4 rounded-2xl shadow-xl disabled:opacity-50"
+            >
+              {isSolverLoading ? <Loader2 className="animate-spin" size={24} /> : <Send size={24} />}
             </button>
           </form>
           {solveResult && (
-            <div className="p-6 bg-white rounded-[2rem] border border-blue-50 shadow-sm">
-              <h3 className="text-xs font-black text-blue-600 uppercase tracking-widest mb-4">{t.stepByStep}</h3>
-              <div className="prose text-gray-700 whitespace-pre-wrap font-medium leading-relaxed">{solveResult}</div>
+            <div className={`p-6 rounded-[2rem] border shadow-sm animate-slide-in ${solveError ? 'bg-red-50 border-red-100' : 'bg-white border-blue-50'}`}>
+              <div className="flex items-center gap-2 mb-4">
+                 <Sparkles size={16} className={solveError ? 'text-red-500' : 'text-blue-600'} />
+                 <h3 className={`text-xs font-black uppercase tracking-widest ${solveError ? 'text-red-600' : 'text-blue-600'}`}>
+                   {solveError ? 'Error Occurred' : t.stepByStep}
+                 </h3>
+              </div>
+              <div className={`prose max-w-none whitespace-pre-wrap font-medium leading-relaxed ${solveError ? 'text-red-700' : 'text-gray-700'}`}>
+                {solveResult}
+              </div>
             </div>
           )}
         </div>
