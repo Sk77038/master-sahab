@@ -1,15 +1,16 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Question } from "../../types";
 
 /**
  * Robust AI Instance Getter
- * Fetches the API key directly from the environment
+ * Injected via Vite Define at build time
  */
 const getAI = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.error("❌ MASTER SAHAB ERROR: API_KEY is missing in environment.");
-    throw new Error("API_KEY_MISSING");
+    console.error("CRITICAL: Master Sahab API Key is missing. Check deployment environment variables.");
+    throw new Error("SERVER_CONFIG_ERROR");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -21,27 +22,23 @@ export async function solveQuestion(prompt: string, language: 'en' | 'hi') {
   try {
     const ai = getAI();
     const systemInstruction = language === 'hi' 
-      ? "You are 'Master Sahab', a brilliant Indian teacher. Explain complex topics using Hinglish (Hindi + English). Provide step-by-step solutions. Technical terms should be in English, explanations in Hindi. Use clean Markdown formatting."
-      : "You are 'Master Sahab', an expert academic tutor. Provide clear, professional, step-by-step solutions in English using clean Markdown formatting.";
+      ? "You are 'Master Sahab', an expert teacher. Explain in Hinglish (mix of Hindi and English). Use step-by-step formatting."
+      : "You are 'Master Sahab', an expert teacher. Explain clearly in English with step-by-step formatting.";
 
+    // Using the simplest string content format for maximum stability
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [{ text: `Solve this academic question: ${prompt}` }] },
+      contents: [{ parts: [{ text: `${systemInstruction}\n\nQuestion: ${prompt}` }] }],
       config: {
-        systemInstruction: systemInstruction,
         temperature: 0.7,
-        thinkingConfig: { thinkingBudget: 0 } // Disabled for faster text-only response
       }
     });
 
-    if (!response.text) {
-      console.warn("⚠️ AI returned empty text.");
-      throw new Error("EMPTY_RESPONSE");
-    }
+    if (!response.text) throw new Error("EMPTY_RESPONSE");
     return response.text;
   } catch (error: any) {
-    console.error("❌ Solve Question Error:", error);
-    throw new Error("Master Sahab is thinking too much. Please try a simpler question.");
+    console.error("AI Solve Error:", error);
+    throw new Error("Master Sahab is taking a break. Please check your internet or try again later.");
   }
 }
 
@@ -51,24 +48,15 @@ export async function solveQuestion(prompt: string, language: 'en' | 'hi') {
 export async function fastExplain(prompt: string, language: 'en' | 'hi') {
   try {
     const ai = getAI();
-    const systemInstruction = language === 'hi'
-      ? "Give a quick 2-sentence explanation in Hindi, keeping technical words in English."
-      : "Give a quick 2-sentence explanation in clear English.";
-
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [{ text: `Briefly define: ${prompt}` }] },
-      config: {
-        systemInstruction: systemInstruction,
-        temperature: 0.5,
-        thinkingConfig: { thinkingBudget: 0 }
-      }
+      contents: [{ parts: [{ text: `Give a 2-sentence quick explanation of: ${prompt} (${language === 'hi' ? 'Explain in Hindi' : 'Explain in English'})` }] }],
+      config: { temperature: 0.5 }
     });
-
-    return response.text || "I'm sorry, I couldn't find a quick explanation.";
+    return response.text || "I couldn't find a quick answer.";
   } catch (error) {
-    console.error("❌ Fast Explain Error:", error);
-    return "Master Sahab is busy teaching another class. Try again in a bit?";
+    console.error("Fast Explain Error:", error);
+    return "Master Sahab is busy. Try again?";
   }
 }
 
@@ -80,7 +68,7 @@ export async function generateAIQuiz(grade: string, subject: string): Promise<Qu
     const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [{ text: `Generate 20 MCQ questions for Class ${grade}, Subject: ${subject}. Questions must be academically accurate for Indian school curriculum. Provide questions in both English and Hindi.` }] },
+      contents: [{ parts: [{ text: `Generate a 20-question MCQ quiz for Class ${grade}, Subject: ${subject}. Return valid JSON.` }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -108,7 +96,7 @@ export async function generateAIQuiz(grade: string, subject: string): Promise<Qu
     const text = response.text?.trim() || "[]";
     return JSON.parse(text);
   } catch (error) {
-    console.error("❌ Quiz Generation Error:", error);
+    console.error("Quiz Gen Error:", error);
     throw error;
   }
 }
@@ -119,29 +107,21 @@ export async function generateAIQuiz(grade: string, subject: string): Promise<Qu
 export async function solveWithImage(base64Image: string, language: 'en' | 'hi') {
   try {
     const ai = getAI();
-    const systemInstruction = language === 'hi'
-      ? "Identify and solve the academic question in this image. Use Hindi for explanation and English for technical terms. Provide step-by-step solution."
-      : "Identify and solve the academic question in this image step-by-step in English. Use clean Markdown formatting.";
-
-    // Strictly structured multimodal input
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: {
         parts: [
           { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-          { text: "Read the question from this image and solve it step-by-step." }
+          { text: "Read the academic question from this image and solve it step-by-step." }
         ]
       },
       config: {
-        systemInstruction: systemInstruction,
         temperature: 0.4
       }
     });
-
-    if (!response.text) throw new Error("Could not process image.");
     return response.text;
   } catch (error: any) {
-    console.error("❌ Camera Solve Error:", error);
-    throw new Error("Master Sahab couldn't read the image clearly. Please try again with better light.");
+    console.error("Camera Error:", error);
+    throw new Error("Master Sahab couldn't read the photo. Please use better lighting.");
   }
 }

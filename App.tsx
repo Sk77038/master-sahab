@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, Language, UserProfile } from './types';
 import { NAV_ITEMS, TRANSLATIONS, CLASSES, SUBJECTS } from './constants';
@@ -23,7 +24,8 @@ import {
   Loader2,
   Trophy,
   Bell,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCcw
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -93,7 +95,9 @@ const App: React.FC = () => {
       setSolveResult(res);
     } catch (err: any) {
       setSolveError(true);
-      setSolveResult(err.message || t.apiError);
+      setSolveResult(err.message === "SERVER_CONFIG_ERROR" 
+        ? "System setup in progress. Please set the API_KEY in your deployment dashboard." 
+        : err.message || t.apiError);
     } finally {
       setIsSolverLoading(false);
     }
@@ -268,9 +272,9 @@ const App: React.FC = () => {
               </div>
               <button 
                 onClick={() => setSolveResult("")}
-                className="mt-8 w-full py-4 border-2 border-gray-100 text-gray-400 font-black rounded-2xl text-xs uppercase tracking-widest"
+                className="mt-8 w-full py-4 border-2 border-gray-100 text-gray-400 font-black rounded-2xl text-xs uppercase tracking-widest flex items-center justify-center gap-2"
               >
-                Clear Screen
+                <RefreshCcw size={16} /> Clear Screen
               </button>
             </div>
           )}
