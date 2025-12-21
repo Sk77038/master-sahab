@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, Language, UserProfile } from './types';
 import { NAV_ITEMS, TRANSLATIONS, CLASSES, SUBJECTS } from './constants';
@@ -23,7 +22,8 @@ import {
   Camera,
   Loader2,
   Trophy,
-  Bell
+  Bell,
+  AlertTriangle
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -93,7 +93,7 @@ const App: React.FC = () => {
       setSolveResult(res);
     } catch (err: any) {
       setSolveError(true);
-      setSolveResult(t.apiError);
+      setSolveResult(err.message || t.apiError);
     } finally {
       setIsSolverLoading(false);
     }
@@ -257,20 +257,20 @@ const App: React.FC = () => {
             <div className={`p-8 rounded-[2.5rem] border shadow-sm animate-slide-in mb-10 ${solveError ? 'bg-red-50 border-red-100' : 'bg-white border-blue-50'}`}>
               <div className="flex items-center gap-3 mb-6">
                  <div className={`p-2 rounded-xl ${solveError ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                   <Sparkles size={20} />
+                   {solveError ? <AlertTriangle size={20} /> : <Sparkles size={20} />}
                  </div>
                  <h3 className={`text-xs font-black uppercase tracking-[0.2em] ${solveError ? 'text-red-600' : 'text-blue-600'}`}>
-                   {solveError ? 'Error Occurred' : t.stepByStep}
+                   {solveError ? 'Error Message' : t.stepByStep}
                  </h3>
               </div>
-              <div className={`prose max-w-none whitespace-pre-wrap font-medium leading-relaxed ${solveError ? 'text-red-700' : 'text-gray-700'}`}>
+              <div className={`prose max-w-none whitespace-pre-wrap font-medium leading-relaxed ${solveError ? 'text-red-700 italic' : 'text-gray-700'}`}>
                 {solveResult}
               </div>
               <button 
                 onClick={() => setSolveResult("")}
                 className="mt-8 w-full py-4 border-2 border-gray-100 text-gray-400 font-black rounded-2xl text-xs uppercase tracking-widest"
               >
-                Clear Solution
+                Clear Screen
               </button>
             </div>
           )}
