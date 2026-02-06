@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#F8FAFC">
     <meta name="mobile-web-app-capable" content="yes">
     
     <title>Master Sahab AI</title>
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3426/3426653.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --safe-area-inset-top: env(safe-area-inset-top);
@@ -24,7 +23,7 @@
         }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #ffffff;
+            background-color: #F8FAFC;
             -webkit-tap-highlight-color: transparent;
             margin: 0;
             padding: 0;
@@ -32,7 +31,6 @@
             height: 100%;
             overflow: hidden;
             position: fixed;
-            /* Adjust for native safe areas */
             padding-top: var(--safe-area-inset-top);
             padding-bottom: var(--safe-area-inset-bottom);
         }
@@ -41,44 +39,48 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-        @keyframes slideIn {
-          from { transform: translateY(30px); opacity: 0; }
+        
+        /* Smooth Animations */
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
         .animate-slide-in {
-          animation: slideIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(250%); }
+        
+        /* Hide Scrollbar but allow scroll */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
         }
-        /* Custom scrollbar for mobile */
-        ::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Custom Input Styles */
+        input:focus, textarea:focus, select:focus {
+            outline: none;
         }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "vite": "https://esm.sh/vite@^7.3.0",
-    "@capacitor/cli": "https://esm.sh/@capacitor/cli@^8.0.0"
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "@google/genai": "https://esm.sh/@google/genai@^0.1.1",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.263.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.0.0",
+    "vite": "https://esm.sh/vite@^4.0.0",
+    "@capacitor/cli": "https://esm.sh/@capacitor/cli@^5.0.0"
   }
 }
 </script>
 </head>
 <body>
     <div id="root"></div>
-    
-    <!-- Vite entry point -->
     <script type="module" src="/index.tsx"></script>
-
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
