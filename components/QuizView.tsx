@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { TRANSLATIONS, SUBJECTS, CLASSES } from '../constants';
 import { Language, Question } from '../types';
-import { CheckCircle, XCircle, Clock, ArrowRight, RotateCcw, Brain, Sparkles, Volume2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, ArrowRight, RotateCcw, Brain, Sparkles, Volume2, ChevronLeft, LogOut } from 'lucide-react';
 import { generateAIQuiz } from './services/geminiService';
 
 interface QuizProps {
@@ -96,10 +95,20 @@ export const QuizView: React.FC<QuizProps> = ({ language, onComplete, onExit }) 
   if (step === 'selection') {
     return (
       <div className="p-6 flex flex-col gap-6 animate-slide-in">
-        <div className="flex items-center gap-3 mb-2">
-           <div className="p-2 bg-blue-100 text-blue-600 rounded-xl"><Brain /></div>
-           <h2 className="text-2xl font-bold text-gray-800">{t.startQuiz}</h2>
+        {/* --- NAYA BACK BUTTON HEADER --- */}
+        <div className="flex items-center gap-4">
+           <button 
+             onClick={onExit} 
+             className="w-12 h-12 bg-white rounded-2xl border border-gray-100 flex items-center justify-center shadow-sm active:scale-95 transition-all text-gray-700 hover:bg-gray-50"
+           >
+             <ChevronLeft size={24} />
+           </button>
+           <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 text-blue-600 rounded-xl"><Brain size={20} /></div>
+              <h2 className="text-2xl font-black text-gray-800">{t.startQuiz}</h2>
+           </div>
         </div>
+
         {error && (
           <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 flex items-center gap-2">
             <XCircle size={18} /> {error}
@@ -107,21 +116,21 @@ export const QuizView: React.FC<QuizProps> = ({ language, onComplete, onExit }) 
         )}
         <div className="space-y-4">
           <label className="block">
-            <span className="text-gray-600 mb-2 font-semibold block">{t.selectClass}</span>
+            <span className="text-gray-600 mb-2 font-bold uppercase tracking-widest text-xs ml-1">{t.selectClass}</span>
             <select 
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full p-4 rounded-xl border-2 border-blue-100 bg-white focus:border-blue-500 outline-none font-bold"
+              className="w-full p-4 rounded-2xl border-2 border-blue-100 bg-white focus:border-blue-500 outline-none font-bold text-gray-700"
             >
               {CLASSES.map(c => <option key={c} value={c}>Class {c}th</option>)}
             </select>
           </label>
           <label className="block">
-            <span className="text-gray-600 mb-2 font-semibold block">{t.selectSubject}</span>
+            <span className="text-gray-600 mb-2 font-bold uppercase tracking-widest text-xs ml-1">{t.selectSubject}</span>
             <select 
               value={selectedSub}
               onChange={(e) => setSelectedSub(e.target.value)}
-              className="w-full p-4 rounded-xl border-2 border-blue-100 bg-white focus:border-blue-500 outline-none font-bold"
+              className="w-full p-4 rounded-2xl border-2 border-blue-100 bg-white focus:border-blue-500 outline-none font-bold text-gray-700"
             >
               {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -129,9 +138,9 @@ export const QuizView: React.FC<QuizProps> = ({ language, onComplete, onExit }) 
         </div>
         <button 
           onClick={startAIQuiz}
-          className="bg-blue-600 text-white p-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 active:scale-95 transition-all flex items-center justify-center gap-3 mt-4"
+          className="bg-blue-600 text-white p-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-200 active:scale-95 transition-all flex items-center justify-center gap-3 mt-4"
         >
-          <Sparkles size={22} /> {language === Language.EN ? 'Start 20 Questions Quiz' : '20 प्रश्नों की क्विज़ शुरू करें'}
+          <Sparkles size={22} /> {language === Language.EN ? 'Start Quiz' : 'क्विज़ शुरू करें'}
         </button>
       </div>
     );
@@ -146,10 +155,7 @@ export const QuizView: React.FC<QuizProps> = ({ language, onComplete, onExit }) 
         </div>
         <div className="space-y-3">
           <h3 className="text-2xl font-black text-gray-900 tracking-tight">Master Sahab is thinking...</h3>
-          <p className="text-gray-500 font-medium px-4">Creating 20 unique bilingual questions for {selectedSub} (Class {selectedClass})</p>
-        </div>
-        <div className="w-full max-w-xs bg-gray-100 h-2 rounded-full overflow-hidden">
-          <div className="bg-blue-600 h-full animate-[loading_2s_ease-in-out_infinite]" style={{width: '60%'}}></div>
+          <p className="text-gray-500 font-medium px-4">Creating questions for {selectedSub} (Class {selectedClass})</p>
         </div>
       </div>
     );
@@ -168,7 +174,6 @@ export const QuizView: React.FC<QuizProps> = ({ language, onComplete, onExit }) 
         <div className="text-7xl font-black text-blue-600 drop-shadow-sm">{score} <span className="text-2xl text-gray-300">/ {questions.length}</span></div>
         <div className="bg-blue-50 p-6 rounded-[2rem] w-full border border-blue-100">
            <p className="text-blue-800 font-black text-lg mb-1">XP Earned: +{score * 10}</p>
-           <p className="text-blue-600 text-sm font-medium">Keep it up! Your global rank is improving.</p>
         </div>
         <div className="grid grid-cols-2 gap-4 w-full mt-4">
           <button onClick={() => setStep('selection')} className="flex items-center justify-center gap-2 p-5 border-2 border-blue-600 text-blue-600 rounded-2xl font-black active:scale-95 transition-all">
@@ -187,12 +192,16 @@ export const QuizView: React.FC<QuizProps> = ({ language, onComplete, onExit }) 
 
   return (
     <div className="p-4 flex flex-col gap-5 animate-slide-in pb-20">
-      <div className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+      {/* --- QUIZ ACTIVE HEADER WITH BACK BUTTON --- */}
+      <div className="flex justify-between items-center bg-white p-2 pr-4 rounded-2xl shadow-sm border border-gray-100">
         <div className="flex items-center gap-3">
+           <button onClick={() => setStep('selection')} className="p-3 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors">
+              <ChevronLeft size={24} />
+           </button>
            <div className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-xl text-lg font-black shadow-lg shadow-blue-100">
              {currentIdx + 1}
            </div>
-           <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Question OF {questions.length}</span>
+           <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest hidden sm:block">Question OF {questions.length}</span>
         </div>
         <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-black ${timer < 5 ? 'bg-red-50 text-red-500 animate-pulse' : 'bg-gray-50 text-gray-600'}`}>
           <Clock size={18} /> {timer}s
